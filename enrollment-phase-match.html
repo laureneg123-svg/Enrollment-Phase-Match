@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enrollment Phase Match - Morning Brain Warm-up</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #f5576c;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .info-bar {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 10px;
+        }
+
+        .info-item {
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .timer {
+            color: #e74c3c;
+        }
+
+        .game-board {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .current-phase-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .phase-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .current-phase {
+            color: white;
+            font-size: 1.8em;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+
+        .definitions-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .definitions-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .column-header {
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #f5576c;
+            padding: 10px;
+            background: #f8f8f8;
+            border-radius: 10px;
+        }
+
+        .card {
+            padding: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: 500;
+            position: relative;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            font-size: 1em;
+            line-height: 1.4;
+        }
+
+        .phase-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 0.95em;
+        }
+
+        .definition-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            font-size: 0.9em;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .card.selected {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            border: 3px solid #38ef7d;
+        }
+
+        .card.correct {
+            background: linear-gradient(135deg, #38ef7d 0%, #11998e 100%);
+            animation: correctPulse 0.5s ease;
+        }
+
+        .card.matched {
+            background: linear-gradient(135deg, #38ef7d 0%, #11998e 100%);
+            cursor: default;
+            opacity: 0.6;
+        }
+
+        .card.matched:hover {
+            transform: none;
+        }
+
+        .card.wrong {
+            animation: shake 0.3s ease;
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .start-screen, .end-screen {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .start-screen h2, .end-screen h2 {
+            color: #f5576c;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .start-screen p, .end-screen p {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(245, 87, 108, 0.4);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .final-score {
+            font-size: 3em;
+            color: #f5576c;
+            margin: 20px 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #f5576c;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .instructions {
+            background: #fff0f3;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .instructions h3 {
+            color: #f5576c;
+            margin-bottom: 10px;
+        }
+
+        .instructions ul {
+            color: #666;
+            line-height: 1.8;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1>📋 Enrollment Phase Match</h1>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="startScreen" class="start-screen">
+            <h2>Match Phases to Definitions! ☕</h2>
+            <p>Test your knowledge of enrollment phases by matching each phase to its correct definition.</p>
+
+            <div class="instructions">
+                <h3>How to Play:</h3>
+                <ul>
+                    <li>A phase appears at the top - read it carefully</li>
+                    <li>Click the correct definition from 4 choices below</li>
+                    <li>Correct answers turn green and advance to the next phase</li>
+                    <li>Wrong answers shake - try another choice!</li>
+                    <li>Match all 8 phases as fast as you can</li>
+                    <li>Faster matches = higher score!</li>
+                </ul>
+            </div>
+
+            <button class="btn" onclick="startGame()">Start Matching!</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="gameScreen" class="hidden">
+            <div class="info-bar">
+                <div class="info-item">
+                    <div class="info-label">Score:</div>
+                    <div class="info-value" id="score">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Progress:</div>
+                    <div class="info-value" id="matched">0/8</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Time:</div>
+                    <div class="info-value timer" id="timer">0</div>
+                </div>
+            </div>
+
+            <div class="game-board">
+                <div class="current-phase-container">
+                    <div class="phase-label">Match This Phase:</div>
+                    <div class="current-phase" id="currentPhase"></div>
+                </div>
+                
+                <div class="definitions-container" id="definitionsContainer">
+                    <!-- Definition choices will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- End Screen -->
+        <div id="endScreen" class="end-screen hidden">
+            <h2>All Matched! 🎉</h2>
+            <div class="final-score" id="finalScore">0</div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="finalTime">0s</div>
+                    <div class="stat-label">Time</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="attempts">0</div>
+                    <div class="stat-label">Attempts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="accuracy">0%</div>
+                    <div class="stat-label">Accuracy</div>
+                </div>
+            </div>
+            <p></p>
+            <button class="btn" onclick="downloadScorecard()">Download Scorecard</button>
+            <button class="btn" onclick="startGame()" style="margin-left: 10px;">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        const phases = [
+            {
+                phase: "Provider Action Required",
+                definition: "More info needed - provider must act"
+            },
+            {
+                phase: "Provider Print and Return Form",
+                definition: "Print form and follow instructions"
+            },
+            {
+                phase: "Awaiting Form from Provider",
+                definition: "Provider printed - waiting for return"
+            },
+            {
+                phase: "Form Being Prepared",
+                definition: "Waystar preparing enrollment form"
+            },
+            {
+                phase: "Pending Electronic Processing",
+                definition: "Waystar processing - no form needed"
+            },
+            {
+                phase: "Pending Payer Approval",
+                definition: "Forms sent to payer - awaiting decision"
+            },
+            {
+                phase: "Pending First Remit File",
+                definition: "Enrollment is awaiting approval & first file delivery"
+            },
+            {
+                phase: "Provider Complete Instructions",
+                definition: "Instructions downloaded - finish in system"
+            }
+        ];
+
+        let score = 0;
+        let matched = 0;
+        let currentPhaseIndex = 0;
+        let remainingPhases = [];
+        let timerInterval;
+        let timeElapsed = 0;
+        let totalAttempts = 0;
+        let correctMatches = 0;
+
+        // Random taglines for end screen
+        const taglines = [
+            "You're an enrollment genius!",
+            "It's a bad day to be an enrollment request!",
+            "Enrollment Requests hate to see you coming!",
+            "You should change your legal name to Enrollment Expert!",
+            "Now you are ready to be an Enrollment Specialist!"
+        ];
+
+        function startGame() {
+            // Reset game state
+            score = 0;
+            matched = 0;
+            currentPhaseIndex = 0;
+            timeElapsed = 0;
+            totalAttempts = 0;
+            correctMatches = 0;
+
+            // Shuffle phases for random order
+            remainingPhases = shuffleArray([...phases]);
+
+            // Show game screen
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('endScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+
+            // Update UI
+            document.getElementById('score').textContent = score;
+            document.getElementById('matched').textContent = `0/${phases.length}`;
+            document.getElementById('timer').textContent = timeElapsed;
+
+            // Show first phase
+            showNextPhase();
+
+            // Start timer
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function showNextPhase() {
+            if (currentPhaseIndex >= remainingPhases.length) {
+                // Game complete!
+                endGame();
+                return;
+            }
+
+            const currentPhase = remainingPhases[currentPhaseIndex];
+            
+            // Display the current phase
+            document.getElementById('currentPhase').textContent = currentPhase.phase;
+
+            // Create 4 definition choices (correct answer + 3 random wrong answers)
+            const choices = getDefinitionChoices(currentPhase);
+            
+            // Display choices
+            displayChoices(choices, currentPhase);
+        }
+
+        function getDefinitionChoices(currentPhase) {
+            // Start with the correct definition
+            const choices = [{ 
+                definition: currentPhase.definition, 
+                isCorrect: true,
+                phase: currentPhase.phase
+            }];
+
+            // Get 3 random wrong definitions (need 3 to make 4 total)
+            const otherPhases = phases.filter(p => p.phase !== currentPhase.phase);
+            const wrongChoices = shuffleArray(otherPhases).slice(0, 3);
+            
+            wrongChoices.forEach(p => {
+                choices.push({ 
+                    definition: p.definition, 
+                    isCorrect: false,
+                    phase: p.phase
+                });
+            });
+
+            // Shuffle the choices so correct answer isn't always first
+            return shuffleArray(choices);
+        }
+
+        function displayChoices(choices, currentPhase) {
+            const container = document.getElementById('definitionsContainer');
+            container.innerHTML = '';
+
+            choices.forEach(choice => {
+                const card = document.createElement('div');
+                card.className = 'card definition-card';
+                card.textContent = choice.definition;
+                card.dataset.isCorrect = choice.isCorrect;
+                card.dataset.phase = choice.phase;
+                card.onclick = () => handleChoiceClick(card, choice);
+                container.appendChild(card);
+            });
+        }
+
+        function handleChoiceClick(card, choice) {
+            if (card.classList.contains('correct') || card.classList.contains('wrong')) {
+                return; // Already answered
+            }
+
+            totalAttempts++;
+
+            if (choice.isCorrect) {
+                // Correct answer!
+                correctMatches++;
+                matched++;
+                
+                // Calculate points based on speed
+                const timeBonus = Math.max(50, 100 - timeElapsed);
+                score += Math.round(timeBonus);
+
+                card.classList.add('correct');
+                
+                document.getElementById('score').textContent = score;
+                document.getElementById('matched').textContent = `${matched}/${phases.length}`;
+
+                playSound(true);
+
+                // Move to next phase after a delay
+                setTimeout(() => {
+                    currentPhaseIndex++;
+                    showNextPhase();
+                }, 1000);
+            } else {
+                // Wrong answer
+                card.classList.add('wrong');
+                playSound(false);
+
+                // Remove wrong styling after animation
+                setTimeout(() => {
+                    card.classList.remove('wrong');
+                }, 300);
+            }
+        }
+
+        // Fisher-Yates shuffle algorithm for proper randomization
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function updateTimer() {
+            timeElapsed++;
+            document.getElementById('timer').textContent = timeElapsed + 's';
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+
+            // Calculate accuracy
+            const accuracy = totalAttempts > 0 ? Math.round((correctMatches / totalAttempts) * 100) : 0;
+
+            // Select random tagline
+            const randomTagline = taglines[Math.floor(Math.random() * taglines.length)];
+
+            // Hide game screen
+            document.getElementById('gameScreen').classList.add('hidden');
+
+            // Show end screen with random tagline
+            document.getElementById('endScreen').classList.remove('hidden');
+            document.getElementById('finalScore').textContent = score + ' points!';
+            document.getElementById('finalTime').textContent = timeElapsed + 's';
+            document.getElementById('attempts').textContent = totalAttempts;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+            
+            // Update the tagline paragraph
+            const taglineParagraph = document.querySelector('#endScreen p');
+            taglineParagraph.textContent = randomTagline;
+        }
+
+        function playSound(isCorrect) {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            if (isCorrect) {
+                oscillator.frequency.value = 800;
+                gainNode.gain.value = 0.1;
+            } else {
+                oscillator.frequency.value = 200;
+                gainNode.gain.value = 0.05;
+            }
+
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+
+        function downloadScorecard() {
+            // Create canvas for scorecard
+            const canvas = document.createElement('canvas');
+            canvas.width = 800;
+            canvas.height = 600;
+            const ctx = canvas.getContext('2d');
+
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, 800, 600);
+            gradient.addColorStop(0, '#f093fb');
+            gradient.addColorStop(1, '#f5576c');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 800, 600);
+
+            // White card background
+            ctx.fillStyle = 'white';
+            ctx.roundRect(50, 50, 700, 500, 20);
+            ctx.fill();
+
+            // Title
+            ctx.fillStyle = '#f5576c';
+            ctx.font = 'bold 48px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('🎉 Enrollment Phase Match', 400, 120);
+
+            // Subtitle
+            ctx.fillStyle = '#666';
+            ctx.font = '24px Arial';
+            ctx.fillText('Game Results', 400, 160);
+
+            // Date and time
+            const now = new Date();
+            const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+            ctx.font = '18px Arial';
+            ctx.fillText(dateStr, 400, 190);
+
+            // Score section
+            ctx.fillStyle = '#f5576c';
+            ctx.font = 'bold 72px Arial';
+            ctx.fillText(score + ' points', 400, 280);
+
+            // Stats
+            const accuracy = totalAttempts > 0 ? Math.round((correctMatches / totalAttempts) * 100) : 0;
+            
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 32px Arial';
+            ctx.textAlign = 'left';
+            
+            // Left column stats
+            ctx.fillText('⏱️ Time:', 120, 360);
+            ctx.fillStyle = '#666';
+            ctx.font = '28px Arial';
+            ctx.fillText(timeElapsed + ' seconds', 120, 400);
+
+            // Middle column stats
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 32px Arial';
+            ctx.fillText('🎯 Attempts:', 320, 360);
+            ctx.fillStyle = '#666';
+            ctx.font = '28px Arial';
+            ctx.fillText(totalAttempts + ' tries', 320, 400);
+
+            // Right column stats
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 32px Arial';
+            ctx.fillText('✅ Accuracy:', 520, 360);
+            ctx.fillStyle = '#666';
+            ctx.font = '28px Arial';
+            ctx.fillText(accuracy + '%', 520, 400);
+
+            // Performance message
+            ctx.fillStyle = '#f5576c';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            let message = '';
+            if (accuracy >= 90) {
+                message = '🌟 Outstanding! Enrollment Expert!';
+            } else if (accuracy >= 75) {
+                message = '🎊 Great Job! Keep it up!';
+            } else if (accuracy >= 60) {
+                message = '👍 Good Work! Practice makes perfect!';
+            } else {
+                message = '💪 Nice Try! You\'re learning!';
+            }
+            ctx.fillText(message, 400, 480);
+
+            // Footer
+            ctx.fillStyle = '#999';
+            ctx.font = '16px Arial';
+            ctx.fillText('Enrollment Phase Match - Morning Brain Warm-up', 400, 520);
+
+            // Convert canvas to blob and download
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                const timestamp = now.getTime();
+                link.download = `enrollment-match-scorecard-${timestamp}.png`;
+                link.href = url;
+                link.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+
+        // Polyfill for roundRect (for older browsers)
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+                this.beginPath();
+                this.moveTo(x + radius, y);
+                this.lineTo(x + width - radius, y);
+                this.quadraticCurveTo(x + width, y, x + width, y + radius);
+                this.lineTo(x + width, y + height - radius);
+                this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                this.lineTo(x + radius, y + height);
+                this.quadraticCurveTo(x, y + height, x, y + height - radius);
+                this.lineTo(x, y + radius);
+                this.quadraticCurveTo(x, y, x + radius, y);
+                this.closePath();
+            };
+        }
+    </script>
+</body>
+</html>
